@@ -501,7 +501,7 @@
 
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { FileUp, Plus } from "lucide-react";
 
 import useJobFilters from "./hooks/useJobFilters";
 import AdvancedFilters from "./components/AdvancedFilters";
@@ -512,6 +512,9 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import ApplicationTable from "./components/ApplicationTable";
 import JobForm from "./components/JobForm";
+
+import ApplicantImport from "./components/ApplicantImport";
+import ImportPreview from "./components/ImportPreview";
 
 import useJobs from "./hooks/useJobs";
 
@@ -525,6 +528,8 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
+
+  const [importData, setImportData] = useState(null);
 
   // 2. Database Hook
   const {
@@ -578,6 +583,36 @@ function App() {
     }
 
     return result;
+  };
+
+  // 6.1. Import save Job
+  const handleImportedSave = async (data) => {
+    const result = await createJob(data);
+
+    if (result?.duplicate) {
+      const existing = result.existingJob;
+
+      window.alert(
+        `Duplicate Application Found!\n\n` +
+        `Organization: ${existing.organization}\n` +
+        `Post: ${existing.post}\n` +
+        `User ID: ${existing.userId}`
+      );
+
+      return;
+    }
+
+    if (!result?.success) {
+      window.alert(
+        result?.message || "Application could not be saved."
+      );
+      return;
+    }
+
+    setImportData(null);
+    setActivePage("dashboard");
+
+    window.alert("Application imported successfully!");
   };
 
   // 7. Delete Job
@@ -638,8 +673,19 @@ function App() {
                 {error}
               </div>
             )}
-
-            {activePage === "details" && selectedJob ? (
+            {activePage === "import" ? (
+              importData ? (
+                <ImportPreview
+                  data={importData}
+                  onConfirm={handleImportedSave}
+                  onCancel={() => setImportData(null)}
+                />
+              ) : (
+                <ApplicantImport
+                  onImport={setImportData}
+                />
+              )
+            ) : activePage === "details" && selectedJob ? (
               <ApplicationDetails
                 job={
                   jobs.find((item) => item.id === selectedJob.id) ||
@@ -668,6 +714,17 @@ function App() {
                   >
                     <Plus size={18} />
                     Add New Job
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setImportData(null);
+                      setActivePage("import");
+                    }}
+                    className="flex items-center gap-2 rounded-xl border border-emerald-600 px-5 py-3 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                  >
+                    <FileUp size={18} />
+                    Import Applicant Copy
                   </button>
 
                 </div>
