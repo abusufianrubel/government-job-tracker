@@ -80,7 +80,8 @@
 // }
 
 
-import { Pencil, Trash2, Search } from "lucide-react";
+import { Eye, Pencil, Trash2, Search } from "lucide-react";
+
 
 export default function ApplicationTable({
   applications,
@@ -88,6 +89,7 @@ export default function ApplicationTable({
   setSearch,
   onEdit,
   onDelete,
+  onView,
 }) {
   const statusColors = {
     Applied: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
@@ -179,6 +181,14 @@ export default function ApplicationTable({
 
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onView(job)}
+                      title="View Details"
+                      className="rounded-lg p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                    >
+                      <Eye size={16} />
+                    </button>
+
                     <button
                       onClick={() => onEdit(job)}
                       title="Edit"
